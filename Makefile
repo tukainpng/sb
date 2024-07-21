@@ -13,7 +13,6 @@ all:
 	@echo "You need to provide one of these options:"
 	@echo ""
 	@echo "setup          - installs packages, manuals, and configures the user's environment"
-	@echo "restore        - install the packages, configures the current user, and copies the files to the correct locactions (needs a backup made previously)"
 	@echo "update         - updates the local repositories and make a backup of the user's files"
 	@echo "backup         - makes a backup of the user files"
 	@echo "dotfiles       - creates a directory containing dotfiles"
@@ -27,8 +26,6 @@ setup: package-update man-update admin motd config
 	@cp -r ${DTDIR}/.local ${HOME}
 	@cp -r ${DTDIR}/.bash* ${HOME}
 	@rm -rf ${DTDIR}
-
-restore: ${PKGREPO} ${MANREPO} ${BKDIR} admin motd config copy remove-trash
 
 update: backup package-update man-update
 
@@ -67,11 +64,19 @@ config: ${PKGREPO} ${MANREPO}
 	@doas adduser ${USER} seat
 	@doas chsh ${USER} -s /bin/bash
 
-backup: critical-files
+backup:
 	@printf "\033[44mAtualizando o backup\033[0m\n"
 	@mkdir -p ${BKDIR}/.config
 	@mkdir -p ${BKDIR}/.local/share
 	@mkdir -p ${BKDIR}/.local/bin
+	@cp -r ${HOME}/.ssh ${BKDIR}
+	@cp -r ${HOME}/.local/share/gnupg ${BKDIR}/.local/share
+	@cp -r ${HOME}/.local/share/pass ${BKDIR}/.local/share
+	@cp -r ${HOME}/.config/git ${BKDIR}/.config
+	@cp -r ${HOME}/.config/gh ${BKDIR}/.config
+	@cp -r ${HOME}/.config/mutt ${BKDIR}/.config
+	@cp -r ${HOME}/.config/isync ${BKDIR}/.config
+	@cp -r ${HOME}/.config/amfora ${BKDIR}/.config
 	@cp -r ${HOME}/.local/share/nvim ${BKDIR}/.local/share
 	@cp -r ${HOME}/.local/share/emoji ${BKDIR}/.local/share
 	@cp -r ${HOME}/.local/share/bookmarks ${BKDIR}/.local/share
@@ -89,17 +94,6 @@ backup: critical-files
 	@cp -r ${HOME}/.config/vis ${BKDIR}/.config
 	@cp -r ${HOME}/.config/user-dirs.dirs ${BKDIR}/.config
 	@cp -r ${HOME}/.bash* ${BKDIR}/
-
-critical-files:
-	@printf "\033[44mFazendo backup de arquivos críticos\033[0m\n"
-	@rm -rf ${BKDIR}
-	@mkdir -p ${BKDIR}/.config
-	@mkdir -p ${BKDIR}/.local/share
-	@cp -r ${HOME}/.ssh ${BKDIR}
-	@cp -r ${HOME}/.local/share/gnupg ${BKDIR}/.local/share
-	@cp -r ${HOME}/.local/share/pass ${BKDIR}/.local/share
-	@cp -r ${HOME}/.config/git ${BKDIR}/.config
-	@cp -r ${HOME}/.config/gh ${BKDIR}/.config
 
 man-update: man_list
 	@printf "\033[44mAtualizando manuais\033[0m\n"
